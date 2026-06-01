@@ -160,9 +160,10 @@
   .card.bought{opacity:0.38;cursor:default;transform:none!important;}
   .card-name{font-size:12px;margin-bottom:2px;}
   .card-desc{font-size:10px;color:var(--gd);margin-top:1px;}
-  .card-cost{font-size:11px;}
+    .card-cost{font-size:11px;}
 </style>
-""", unsafe_allow_html=True)-size:11px;margin-top:4px;}
+""", unsafe_allow_html=True)
+size:11px;margin-top:4px;}
   .biz-bar{height:4px;background:#001205;border:1px solid var(--gd);margin-top:5px;overflow:hidden;border-radius:2px;}
   .biz-fill{height:100%;background:var(--gm);transition:width 0.2s;}
   .owned-badge{font-size:10px;color:var(--amber);}
@@ -479,4 +480,3 @@ function bootGame(){
   setInterval(renderAll,500);setInterval(tickerUpdate,5000);tickerUpdate();
 }
 </script>
-
