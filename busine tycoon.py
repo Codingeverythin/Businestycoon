@@ -479,5 +479,5 @@ function bootGame(){
   BUSINESSES.forEach(b=>{if(bizState[b.id].owned>0)startLoop(b);});
   setInterval(renderAll,500);setInterval(tickerUpdate,5000);tickerUpdate();
   """)
-  }
+  
 </script>
