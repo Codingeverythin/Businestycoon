@@ -9,7 +9,7 @@
     font-family:'Share Tech Mono',monospace;
     background:var(--bg);
     color:var(--g);
-    min-height:520px;
+    st.markdown("""520px;""")
     display:flex;
     flex-direction:column;
     align-items:center;
