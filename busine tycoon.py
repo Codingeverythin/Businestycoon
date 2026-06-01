@@ -9,7 +9,7 @@
     font-family:'Share Tech Mono',monospace;
     background:var(--bg);
     color:var(--g);
-    st.markdown("""520px;""")
+     520px;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -25,7 +25,7 @@
   }
   .intro-logo{
     font-family:'VT323',monospace;
-    font-size:42px;
+     sont-size:42px;
     color:var(--g);
     letter-spacing:3px;
     text-align:center;
@@ -475,5 +475,6 @@ function bootGame(){
   log('Welcome back, Tycoon!','warn');
   BUSINESSES.forEach(b=>{if(bizState[b.id].owned>0)startLoop(b);});
   setInterval(renderAll,500);setInterval(tickerUpdate,5000);tickerUpdate();
-}
+  """)
+  }
 </script>
