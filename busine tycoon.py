@@ -1,9 +1,9 @@
 import streamlit as st
 
-# 1. TASARIM KISMI (CSS VE HTML ARAYÜZÜ)
+# Tasarım kodlarınızın Python tarafından hatasız okunmasını sağlıyoruz
 st.markdown("""
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+  @import url('https://googleapis.com');
   :root{--g:#00ff41;--gd:#00aa2b;--gf:#003d0f;--gm:#00cc35;--amber:#ffb300;--red:#ff4444;--bg:#0a0f0a;--blue:#00cfff;--purple:#cc44ff;--pink:#ff44aa;}
   *{box-sizing:border-box;margin:0;padding:0;}
   .crt{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--g);padding:16px;border:1px solid var(--gd);position:relative;min-height:520px;}
@@ -90,38 +90,11 @@ st.markdown("""
 </style>
 
 <div class="crt" id="game">
+  <h2 class="sr-only">Business Tycoon V1.2</h2>
   <div class="title">▓▒░ BUSINESS TYCOON V1.2 ░▒▓</div>
+  <div class="paused-banner" id="paused-banner">⏸ PAUSED</div>
+  <div class="stats-row" id="stats-row"></div>
+  <button class="money-btn" onclick="clickMoney(event)">💰 CLICK FOR MONEY 💰</button>
+  <div class="section-title">></div>
 </div>
 """, unsafe_allow_html=True)
-
-
-# 2. PYTHON OYUN MEKANİKLERİ
-if "para" not in st.session_state:
-    st.session_state.para = 0
-if "isletmeler" not in st.session_state:
-    st.session_state.isletmeler = 0
-if "maliyet" not in st.session_state:
-    st.session_state.maliyet = 10
-
-# Skor Tablosu
-st.markdown(f"### 💰 Bakiye: `{st.session_state.para} $` | 🏢 İşletmeler: `{st.session_state.isletmeler}`")
-
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("💰 CLICK FOR MONEY 💰", use_container_width=True):
-        st.session_state.para += 1
-        st.rerun()
-
-with col2:
-    if st.button(f"🏢 BUY BUSINESS ({st.session_state.maliyet} $)", use_container_width=True):
-        if st.session_state.para >= st.session_state.maliyet:
-            st.session_state.para -= st.session_state.maliyet
-            st.session_state.isletmeler += 1
-            st.session_state.maliyet = int(st.session_state.maliyet * 1.5)
-            st.rerun()
-        else:
-            st.error("Yetersiz para!")
-
-# Pasif gelir sistemi
-if st.session_state.isletmeler > 0:
-    st.session_state.para += st.session_state.isletmeler
