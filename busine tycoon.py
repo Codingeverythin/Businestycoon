@@ -282,12 +282,12 @@ for(let i=0;i<40;i++){
   starsEl.appendChild(s);
 }
 
-// ── Typewriter ─────────────────────────────────────────
+// Typewriter 
 const INTRO_TEXT=[
   'Initializing TYCOON.EXE...',
   '',
   'This game was made by',
-  'Metehan Ata.Als',
+  'Metehan Ata',
   '',
   '> All rights reserved.',
   '> Version 1.2 — Terminal Edition',
