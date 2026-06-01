@@ -1,9 +1,10 @@
 import streamlit as st
 
-# Tasarım kodlarınızın Python tarafından hatasız okunmasını sağlıyoruz
 st.markdown("""
 <style>
-  @import url('https://googleapis.com');
+
+
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
   :root{--g:#00ff41;--gd:#00aa2b;--gf:#003d0f;--gm:#00cc35;--amber:#ffb300;--red:#ff4444;--bg:#0a0f0a;--blue:#00cfff;--purple:#cc44ff;--pink:#ff44aa;}
   *{box-sizing:border-box;margin:0;padding:0;}
   .crt{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--g);padding:16px;border:1px solid var(--gd);position:relative;min-height:520px;}
@@ -95,6 +96,291 @@ st.markdown("""
   <div class="paused-banner" id="paused-banner">⏸ PAUSED</div>
   <div class="stats-row" id="stats-row"></div>
   <button class="money-btn" onclick="clickMoney(event)">💰 CLICK FOR MONEY 💰</button>
-  <div class="section-title">></div>
+  <div class="section-title">> ACTIVITY LOG</div>
+  <div class="log" id="log"></div>
+  <div class="btn-row">
+    <button class="btn btn-biz" onclick="openPanel('biz-panel')">🏢 BUSINESSES</button>
+    <button class="btn btn-upg" onclick="openPanel('upg-panel')">⚙ UPGRADES</button>
+    <button class="btn btn-collect" onclick="collectAll()">💵 COLLECT</button>
+    <button class="btn btn-settings" onclick="openPanel('set-panel')">⚙ SETTINGS</button>
+    <button class="btn btn-pause" id="pause-btn" onclick="togglePause()">⏸ PAUSE</button>
+    <button class="btn btn-reset" onclick="openResetPopup()">🗑 RESET</button>
+  </div>
+  <div class="ticker"><span class="tick-inner" id="ticker-text">C:\> BUSINESS TYCOON V1.2 LOADING...</span></div>
+
+  <!-- BUSINESSES PANEL -->
+  <div class="panel biz-panel" id="biz-panel">
+    <div class="panel-header">
+      <div class="panel-title">🏢 BUSINESSES</div>
+      <button class="btn btn-biz" onclick="closePanel('biz-panel')" style="padding:4px 10px;">✕ CLOSE</button>
+    </div>
+    <div class="grid2" id="biz-grid"></div>
+  </div>
+
+  <!-- UPGRADES PANEL -->
+  <div class="panel upg-panel" id="upg-panel">
+    <div class="panel-header">
+      <div class="panel-title">⚙ UPGRADES</div>
+      <button class="btn btn-upg" onclick="closePanel('upg-panel')" style="padding:4px 10px;">✕ CLOSE</button>
+    </div>
+    <div class="grid2" id="upg-grid"></div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel set-panel" id="set-panel">
+    <div class="panel-header">
+      <div class="panel-title">⚙ SETTINGS</div>
+      <button class="btn btn-settings" onclick="closePanel('set-panel')" style="padding:4px 10px;">✕ CLOSE</button>
+    </div>
+    <div class="set-row">
+      <span class="set-label">🔊 Volume</span>
+      <input type="range" min="0" max="100" value="60" id="vol-slider" oninput="setVolume(this.value)">
+      <span class="set-val" id="vol-val">60%</span>
+    </div>
+    <div class="set-row">
+      <span class="set-label">🎵 Sound FX</span>
+      <button class="btn btn-settings" id="sfx-toggle" onclick="toggleSFX()" style="padding:5px 14px;">ON</button>
+    </div>
+    <div class="set-row">
+      <span class="set-label">⏸ Game Pause</span>
+      <button class="btn btn-pause" id="set-pause-btn" onclick="togglePause()" style="padding:5px 14px;">RUNNING</button>
+    </div>
+    <div class="set-row" style="border:none;margin-top:12px;">
+      <span class="set-label" style="color:var(--gd);font-size:10px;">Business Tycoon V1.2<br>Terminal Edition</span>
+    </div>
+  </div>
+
+  <!-- RESET POPUP -->
+  <div class="popup-overlay" id="reset-popup">
+    <div class="popup">
+      <div class="popup-icon">⚠️</div>
+      <div class="popup-title">WARNING!</div>
+      <div class="popup-msg">FORMAT C: /Y will delete ALL save data.<br>Your businesses, money and upgrades<br>will be permanently wiped.<br><br>Are you absolutely sure?</div>
+      <div class="popup-btns">
+        <button class="btn btn-reset" onclick="confirmReset()" style="padding:8px 18px;font-size:13px;">YES, RESET</button>
+        <button class="btn btn-collect" onclick="closeResetPopup()" style="padding:8px 18px;font-size:13px;">CANCEL</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+const CLICK_AMOUNT=5;
+const BUSINESSES=[
+  {id:'lemonade',name:'LEMONADE STAND',baseCost:15,baseIncome:0.5,timeMs:1200,icon:'🍋'},
+  {id:'newspaper',name:'NEWSPAPER ROUND',baseCost:80,baseIncome:2,timeMs:3000,icon:'📰'},
+  {id:'carwash',name:'CAR WASH',baseCost:400,baseIncome:8,timeMs:6000,icon:'🚗'},
+  {id:'pizza',name:'PIZZA DELIVERY',baseCost:2000,baseIncome:40,timeMs:12000,icon:'🍕'},
+  {id:'software',name:'SOFTWARE SHOP',baseCost:12000,baseIncome:200,timeMs:30000,icon:'💾'},
+  {id:'datacenter',name:'DATA CENTER',baseCost:60000,baseIncome:1000,timeMs:60000,icon:'🖥️'},
+];
+const UPGRADES=[
+  {id:'turbo_lemon',name:'TURBO LEMONS',desc:'Lemonade 2x faster',cost:50,effect:()=>{bizState.lemonade.speedMult*=0.5;}},
+  {id:'double_news',name:'2X PAPERS',desc:'Newspaper income x2',cost:300,effect:()=>{bizState.newspaper.incomeMult*=2;}},
+  {id:'auto_collect',name:'AUTO-COLLECT',desc:'Auto-collect all income',cost:1500,effect:()=>{gs.autoCollect=true;}},
+  {id:'tax_patch',name:'TAX PATCH',desc:'All income +25%',cost:8000,effect:()=>{gs.globalMult*=1.25;}},
+  {id:'turbo_oven',name:'TURBO OVEN',desc:'Pizza 2x faster',cost:6000,effect:()=>{bizState.pizza.speedMult*=0.5;}},
+  {id:'corp_lawyer',name:'CORP LAWYER',desc:'All income x2',cost:50000,effect:()=>{gs.globalMult*=2;}},
+  {id:'click_boost',name:'CLICK BOOST',desc:'Click gives 5x more',cost:2000,effect:()=>{gs.clickMult=(gs.clickMult||1)*5;}},
+];
+
+const initGS=()=>({money:0,totalEarned:0,clicks:0,autoCollect:false,globalMult:1,clickMult:1,boughtUpgrades:[]});
+const initBS=()=>{const s={};BUSINESSES.forEach(b=>s[b.id]={owned:0,progress:0,speedMult:1,incomeMult:1,pending:0});return s;};
+let gs=initGS(),bizState=initBS(),intervals={};
+let paused=false,sfxOn=true,volume=0.6;
+
+// ── Audio ──────────────────────────────────────────────
+const AudioCtx=window.AudioContext||window.webkitAudioContext;
+let actx=null;
+function getACtx(){if(!actx)actx=new AudioCtx();return actx;}
+function playTone(freq,type,dur,vol){
+  if(!sfxOn)return;
+  try{
+    const c=getACtx();
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type=type;o.frequency.setValueAtTime(freq,c.currentTime);
+    g.gain.setValueAtTime(vol*volume,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
+    o.start(c.currentTime);o.stop(c.currentTime+dur);
+  }catch(e){}
+}
+function sndClick(){playTone(440,'sine',0.08,0.3);setTimeout(()=>playTone(600,'sine',0.06,0.2),50);}
+function sndBuy(){playTone(300,'square',0.05,0.2);setTimeout(()=>playTone(500,'square',0.08,0.15),60);setTimeout(()=>playTone(700,'square',0.1,0.2),130);}
+function sndUpgrade(){[400,600,800,1000].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',0.12,0.25),i*70));}
+function sndCollect(){playTone(523,'sine',0.07,0.1);setTimeout(()=>playTone(659,'sine',0.07,0.1),80);setTimeout(()=>playTone(784,'sine',0.1,0.15),160);}
+function sndError(){playTone(200,'sawtooth',0.12,0.2);setTimeout(()=>playTone(150,'sawtooth',0.1,0.25),100);}
+function sndReset(){[800,600,400,200].forEach((f,i)=>setTimeout(()=>playTone(f,'sawtooth',0.1,0.18),i*80));}
+function sndPause(){playTone(300,'square',0.08,0.15);setTimeout(()=>playTone(200,'square',0.1,0.2),100);}
+function sndOpen(){playTone(500,'sine',0.06,0.08);setTimeout(()=>playTone(700,'sine',0.06,0.1),60);}
+
+// ── Sound settings ─────────────────────────────────────
+function setVolume(v){volume=v/100;document.getElementById('vol-val').textContent=v+'%';}
+function toggleSFX(){sfxOn=!sfxOn;document.getElementById('sfx-toggle').textContent=sfxOn?'ON':'OFF';playTone(440,'sine',0.1,0.3);}
+
+// ── Save / load ────────────────────────────────────────
+const save=()=>localStorage.setItem('bizTycoon12',JSON.stringify({gs,bizState}));
+function load(){try{const d=JSON.parse(localStorage.getItem('bizTycoon12')||'null');if(d&&d.gs&&d.bizState){gs=d.gs;bizState=d.bizState;}}catch(e){}}
+function resetGame(){sndReset();gs=initGS();bizState=initBS();Object.values(intervals).forEach(clearInterval);intervals={};paused=false;updatePauseUI();save();log('SYSTEM: FORMAT C: /Y ... ALL DATA WIPED','err');renderAll();}
+
+// ── Panels ─────────────────────────────────────────────
+function openPanel(id){sndOpen();document.getElementById(id).classList.add('open');renderAll();}
+function closePanel(id){sndOpen();document.getElementById(id).classList.remove('open');}
+
+// ── Reset popup ────────────────────────────────────────
+function openResetPopup(){sndError();document.getElementById('reset-popup').classList.add('open');}
+function closeResetPopup(){sndOpen();document.getElementById('reset-popup').classList.remove('open');}
+function confirmReset(){closeResetPopup();resetGame();}
+
+// ── Pause ──────────────────────────────────────────────
+function togglePause(){
+  paused=!paused;sndPause();updatePauseUI();
+  if(paused){Object.values(intervals).forEach(clearInterval);intervals={};}
+  else{BUSINESSES.forEach(b=>{if(bizState[b.id].owned>0)startLoop(b);});}
+}
+function updatePauseUI(){
+  const pb=document.getElementById('pause-btn');
+  const spb=document.getElementById('set-pause-btn');
+  const banner=document.getElementById('paused-banner');
+  pb.textContent=paused?'▶ RESUME':'⏸ PAUSE';
+  pb.className='btn btn-pause'+(paused?' paused':'');
+  if(spb){spb.textContent=paused?'PAUSED':'RUNNING';spb.className='btn '+(paused?'btn-reset':'btn-pause');}
+  banner.className='paused-banner'+(paused?' show':'');
+}
+
+// ── Money click ────────────────────────────────────────
+function clickMoney(e){
+  if(paused){sndError();log('Game is paused!','err');return;}
+  sndClick();
+  const amt=CLICK_AMOUNT*(gs.clickMult||1);
+  gs.money+=amt;gs.totalEarned+=amt;gs.clicks++;
+  spawnFloat(e,'+'+fmt(amt));
+  renderStats();save();
+}
+function spawnFloat(e,text){
+  const el=document.createElement('div');
+  el.className='float-label';el.textContent=text;
+  el.style.left=(e.clientX-20)+'px';el.style.top=(e.clientY-20)+'px';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),900);
+}
+
+// ── Business ───────────────────────────────────────────
+function buyBiz(id){
+  if(paused){sndError();log('Unpause first!','err');return;}
+  const b=BUSINESSES.find(x=>x.id===id);
+  const cost=bizCost(b);
+  if(gs.money<cost){sndError();log('INSUFFICIENT FUNDS: Need '+fmt(cost),'err');return;}
+  sndBuy();
+  gs.money-=cost;bizState[id].owned++;
+  log('ACQUIRED: '+b.name+' #'+bizState[id].owned+' for '+fmt(cost),'good');
+  if(bizState[id].owned===1)startLoop(b);
+  renderAll();save();
+}
+function startLoop(b){
+  if(intervals[b.id])clearInterval(intervals[b.id]);
+  intervals[b.id]=setInterval(()=>{
+    if(paused)return;
+    const s=bizState[b.id];if(!s.owned)return;
+    s.progress+=100/(b.timeMs*(s.speedMult||1));
+    if(s.progress>=1){
+      s.progress=0;
+      const earned=b.baseIncome*s.owned*(s.incomeMult||1)*gs.globalMult;
+      if(gs.autoCollect){gs.money+=earned;gs.totalEarned+=earned;save();}
+      else s.pending=(s.pending||0)+earned;
+    }
+    const f=document.getElementById('fill-'+b.id);
+    if(f)f.style.width=Math.min(100,s.progress*100)+'%';
+  },100);
+}
+
+// ── Collect ────────────────────────────────────────────
+function collectAll(){
+  if(paused){sndError();log('Game is paused!','err');return;}
+  let total=0;
+  BUSINESSES.forEach(b=>{const s=bizState[b.id];if(s.pending){total+=s.pending;s.pending=0;}});
+  if(total>0){sndCollect();gs.money+=total;gs.totalEarned+=total;log('COLLECTED: '+fmt(total),'good');}
+  else log('Nothing to collect yet.','');
+  renderAll();save();
+}
+
+// ── Upgrade ────────────────────────────────────────────
+function buyUpgrade(id){
+  if(paused){sndError();log('Unpause first!','err');return;}
+  const u=UPGRADES.find(x=>x.id===id);
+  if(!u||gs.boughtUpgrades.includes(id))return;
+  if(gs.money<u.cost){sndError();log('INSUFFICIENT FUNDS: Need '+fmt(u.cost),'err');return;}
+  sndUpgrade();
+  gs.money-=u.cost;gs.boughtUpgrades.push(id);u.effect();
+  log('UPGRADE INSTALLED: '+u.name,'warn');
+  BUSINESSES.forEach(b=>{if(bizState[b.id].owned>0)startLoop(b);});
+  renderAll();save();
+}
+
+// ── Helpers ────────────────────────────────────────────
+const fmt=n=>n>=1e9?'$'+(n/1e9).toFixed(2)+'B':n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(2)+'K':'$'+n.toFixed(2);
+const bizCost=b=>Math.floor(b.baseCost*Math.pow(1.15,bizState[b.id].owned));
+const bizIncome=b=>b.baseIncome*bizState[b.id].owned*(bizState[b.id].incomeMult||1)*gs.globalMult;
+
+// ── Render ─────────────────────────────────────────────
+function renderStats(){
+  const totalIncome=BUSINESSES.reduce((s,b)=>s+bizIncome(b),0);
+  document.getElementById('stats-row').innerHTML=[
+    {label:'BALANCE',val:fmt(gs.money)},
+    {label:'TOTAL EARNED',val:fmt(gs.totalEarned)},
+    {label:'INCOME/CYC',val:fmt(totalIncome)},
+    {label:'CLICKS',val:gs.clicks},
+  ].map(v=>`<div class="stat"><div class="stat-label">${v.label}</div><div class="stat-val">${v.val}</div></div>`).join('');
+}
+function renderBizGrid(){
+  document.getElementById('biz-grid').innerHTML=BUSINESSES.map(b=>{
+    const s=bizState[b.id],cost=bizCost(b),canAfford=gs.money>=cost;
+    const pend=s.pending>0.01?` <span style="color:var(--amber)">[+${fmt(s.pending)}]</span>`:'';
+    return`<div class="card" onclick="buyBiz('${b.id}')">
+      <div class="card-name" style="color:var(--blue)">${b.icon} ${b.name}</div>
+      <div class="owned-badge">OWNED: ${s.owned}${pend}</div>
+      ${s.owned>0?`<div class="card-desc">Income: ${fmt(bizIncome(b))}/cycle</div>`:''}
+      <div class="card-cost" style="color:${canAfford?'var(--g)':'var(--red)'}">${canAfford?'BUY':'NEED'}: ${fmt(cost)}</div>
+      <div class="biz-bar"><div class="biz-fill" id="fill-${b.id}" style="width:${Math.min(100,(s.progress||0)*100)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+function renderUpgrades(){
+  document.getElementById('upg-grid').innerHTML=UPGRADES.map(u=>{
+    const bought=gs.boughtUpgrades.includes(u.id),canAfford=gs.money>=u.cost;
+    return`<div class="card${bought?' bought':''}" onclick="${bought?'':` buyUpgrade('${u.id}')`}">
+      <div class="card-name" style="color:var(--amber)">${u.name}</div>
+      <div class="card-desc">${u.desc}</div>
+      <div class="card-cost" style="color:${bought?'var(--gd)':canAfford?'var(--g)':'var(--red)'}">
+        ${bought?'[INSTALLED]':(canAfford?'INSTALL: ':'NEED: ')+fmt(u.cost)}</div>
+    </div>`;
+  }).join('');
+}
+function renderAll(){renderStats();renderBizGrid();renderUpgrades();}
+
+const logEl=document.getElementById('log');
+function log(msg,cls=''){
+  const l=document.createElement('div');l.className='log-line '+cls;
+  l.textContent=`[${new Date().toLocaleTimeString('en-US',{hour12:false})}] ${msg}`;
+  logEl.prepend(l);while(logEl.children.length>30)logEl.removeChild(logEl.lastChild);
+}
+function tickerUpdate(){
+  const income=BUSINESSES.reduce((s,b)=>s+bizIncome(b),0);
+  document.getElementById('ticker-text').textContent=[
+    'C:\\> BUSINESS TYCOON V1.2',
+    'BALANCE: '+fmt(gs.money),
+    'INCOME/CYC: '+fmt(income),
+    'CLICKS: '+gs.clicks,
+    'AUTO-COLLECT '+(gs.autoCollect?'ON':'OFF'),
+    paused?'*** GAME PAUSED ***':'COMPETITOR.EXE DETECTED',
+  ].join('  >>>  ');
+}
+
+load();renderAll();
+log('BOOT: BUSINESS TYCOON V1.2 READY','good');
+log('TIP: Use SETTINGS to control volume & pause','');
+BUSINESSES.forEach(b=>{if(bizState[b.id].owned>0)startLoop(b);});
+setInterval(renderAll,500);setInterval(tickerUpdate,5000);tickerUpdate();
+</script>
+
+</script>
 """, unsafe_allow_html=True)
