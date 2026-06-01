@@ -2,9 +2,7 @@ import streamlit as st
 
 st.markdown("""
 <style>
-
-
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
   :root{--g:#00ff41;--gd:#00aa2b;--gf:#003d0f;--gm:#00cc35;--amber:#ffb300;--red:#ff4444;--bg:#0a0f0a;--blue:#00cfff;--purple:#cc44ff;--pink:#ff44aa;}
   *{box-sizing:border-box;margin:0;padding:0;}
   .crt{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--g);padding:16px;border:1px solid var(--gd);position:relative;min-height:520px;}
@@ -380,7 +378,7 @@ log('BOOT: BUSINESS TYCOON V1.2 READY','good');
 log('TIP: Use SETTINGS to control volume & pause','');
 BUSINESSES.forEach(b=>{if(bizState[b.id].owned>0)startLoop(b);});
 setInterval(renderAll,500);setInterval(tickerUpdate,5000);tickerUpdate();
-</script>
+
 
 </script>
 """, unsafe_allow_html=True)
