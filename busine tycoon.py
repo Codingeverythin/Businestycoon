@@ -1,7 +1,9 @@
 
 import streamlit as st
+
 st.markdown("""
 <style>
+
 
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
 
