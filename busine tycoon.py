@@ -472,12 +472,13 @@ function tickerUpdate(){
   const income=BUSINESSES.reduce((s,b)=>s+bizIncome(b),0);
   document.getElementById('ticker-text').textContent=['C:\\> BUSINESS TYCOON V1.2','Made by Metehan Ata.Als','BALANCE: '+fmt(gs.money),'INCOME/CYC: '+fmt(income),'CLICKS: '+gs.clicks,paused?'*** GAME PAUSED ***':'COMPETITOR.EXE DETECTED'].join('  >>>  ');
 }
-function bootGame(){
+{
+function bootGame()
   load();renderAll();
   log('BOOT: BUSINESS TYCOON V1.2 READY','good');
   log('Welcome back, Tycoon!','warn');
   BUSINESSES.forEach(b=>{if(bizState[b.id].owned>0)startLoop(b);});
   setInterval(renderAll,500);setInterval(tickerUpdate,5000);tickerUpdate();
   """)
-  
+}
 </script>
