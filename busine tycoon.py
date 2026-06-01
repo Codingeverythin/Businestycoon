@@ -166,6 +166,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 size:11px;margin-top:4px;}
+</style>
+""", unsafe_allow_html=True)
   .biz-bar{height:4px;background:#001205;border:1px solid var(--gd);margin-top:5px;overflow:hidden;border-radius:2px;}
   .biz-fill{height:100%;background:var(--gm);transition:width 0.2s;}
   .owned-badge{font-size:10px;color:var(--amber);}
