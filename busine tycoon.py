@@ -484,5 +484,6 @@ function bootGame()
   setInterval(renderAll,500);setInterval(tickerUpdate,5000);tickerUpdate();
   
 }
-</script>
-""")
+</style>
+""", unsafe_allow_html=True)
+
